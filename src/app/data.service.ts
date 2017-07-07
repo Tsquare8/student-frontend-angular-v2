@@ -40,16 +40,21 @@ export class DataService {
 
     editRecord(endpoint: string, record:object, id:number): Observable<object> {
         let apiUrl = `${this.baseUrl}${endpoint}/${id}`;
+        console.log(record)
+        console.log(apiUrl)
         return this.http.put(apiUrl, record)
             .map(this.extractData)
             .catch(this.handleError);
     }
 
-    addRecord(endpoint: string, record:object): Observable<any> {
+    addRecord(endpoint: string, record:object): Observable<object> {
         let apiUrl = `${this.baseUrl}${endpoint}`;
         console.log(apiUrl)
+        console.log(record);
+        
         return this.http.post(apiUrl, record)
-            .map(this.extractData);
+            .map(this.extractData)
+            .catch(this.handleError);
     }
 
 
@@ -70,10 +75,10 @@ export class DataService {
                 }else{
                     const errorJSON = error.json();
                     errMsg = errorJSON.message;
-                }
+                } 
             }
         }
-
+        
         return Observable.throw(errMsg);
     }
 

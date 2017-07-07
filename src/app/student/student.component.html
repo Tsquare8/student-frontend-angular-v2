@@ -1,10 +1,17 @@
 <section @fadeInAnimation>
   <ol class="breadcrumb">
-      <li><a routerLink="/home">Home</a></li>
-      <li class="active">Students</li>
+    <li><a routerLink="/home">Home</a></li>
+    <li class="active">Students</li>
   </ol>
 
-  <app-status-message [successMessage]="successMessage" [errorMessage]="errorMessage"></app-status-message>
+  <br/>
+
+  <div [ngClass]="(errorMessage)?'alert alert-danger':'alert alert-success'" role="alert" *ngIf="errorMessage || successMessage">
+    {{errorMessage}} {{successMessage}}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
 
   <h2>Students</h2>
 
@@ -31,11 +38,25 @@
         <td>{{student.start_date}}</td>
         <td>{{student.gpa}}</td>
         <td>{{student.sat}}</td>
-        <td>{{student?.major?.major}}</td>
+
+        <ng-container *ngIf="student.major_id; else potato">
+          <ng-container *ngFor="let major of majors">
+            <ng-container *ngIf="major.major_id == student.major_id">
+              <td>{{major.major}}</td>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+
+        <!--The following will only execute when a null value for student major_id is present-->
+        <ng-template #potato>
+          <td></td>
+        </ng-template>
+
         <td class="text-center">
           <a class="btn btn-primary" [routerLink]="['/student/edit/', student.student_id]">Edit</a>&nbsp;
           <button (click)="deleteStudent(student.student_id)" class="btn btn-danger">Delete</button>
         </td>
+
       </tr>
     </tbody>
   </table>

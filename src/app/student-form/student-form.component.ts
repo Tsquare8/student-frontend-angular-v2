@@ -1,17 +1,33 @@
 import 'rxjs/add/operator/switchMap';
-import { Component, OnInit, ViewChild }      from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
-import { Location }               from '@angular/common';
-import { NgForm } from '@angular/forms';
+import {
+  Component,
+  OnInit,
+  ViewChild
+} from '@angular/core';
+import {
+  ActivatedRoute,
+  Params
+} from '@angular/router';
+import {
+  Location
+} from '@angular/common';
+import {
+  NgForm
+} from '@angular/forms';
 
-import { DataService } from '../data.service'
-import { fadeInAnimation } from '../animations/fade-in.animation';
+import {
+  DataService
+} from '../data.service'
+import {
+  slideInAnimation,
+} from '../animations/slide-in.animation';
 
 @Component({
   selector: 'app-student-form',
   templateUrl: './student-form.component.html',
   styleUrls: ['./student-form.component.css'],
-  animations: [fadeInAnimation]
+  animations: [slideInAnimation],
+  host: { '[@slideInAnimation]': '' }
 })
 export class StudentFormComponent implements OnInit {
 
@@ -21,8 +37,15 @@ export class StudentFormComponent implements OnInit {
   successMessage: string;
   errorMessage: string;
 
-  student: object;
-  majors: object[];
+  student: object = {};
+
+  majors: any[]; // -- needed to lookup the majors
+
+  getRecordForEdit() {
+    this.route.params
+      .switchMap((params: Params) => this.dataService.getRecord('student', +params['id']))
+      .subscribe(student => this.student = student);
+  }
 
   constructor(
     private dataService: DataService,
@@ -30,43 +53,41 @@ export class StudentFormComponent implements OnInit {
     private location: Location
   ) {}
 
-
-  getRecordForEdit(){
-    this.route.params
-      .switchMap((params: Params) => this.dataService.getRecord("student", +params['id']))
-      .subscribe(student => this.student = student);
-  }
-
-  getMajors(){
-    this.dataService.getRecords("major")
+  getMajors() {
+    this.dataService.getRecords('major')
       .subscribe(
-        majors => {this.majors = majors},
-        error =>  this.errorMessage = <any>error);
+        majors => this.majors = majors,
+        error => this.errorMessage = < any > error);
   }
 
   ngOnInit() {
     this.route.params
       .subscribe((params: Params) => {
-        (+params['id']) ? this.getRecordForEdit() : null;
+        (+params['id']) ? this.getRecordForEdit(): null;
       });
 
-      this.getMajors();
-  }
-
-  saveStudent(student: NgForm){
-    if(typeof student.value.student_id === "number"){
-      this.dataService.editRecord("student", student.value, student.value.student_id)
-          .subscribe(
-            student => this.successMessage = "Record updated successfully",
-            error =>  this.errorMessage = <any>error);
-    }else{
-      this.dataService.addRecord("student", student.value)
-          .subscribe(
-            student => this.successMessage = "Record added successfully",
-            error =>  this.errorMessage = <any>error);
-            this.student = {};
+    // -- turn the footer off
+    let div = document.getElementById('the-footer');
+    if (div.style.display !== 'none') {
+        div.style.display = 'none';
     }
 
+    this.getMajors(); // -- getting majors for the select drop down
+  }
+
+  saveStudent(id) {
+    if (typeof id === 'number') {
+      this.dataService.editRecord('student', this.student, id)
+        .subscribe(
+          student => this.successMessage = 'Record updated succesfully',
+          error => this.errorMessage = < any > error);
+    } else {
+      this.dataService.addRecord('student', this.student)
+        .subscribe(
+          student => this.successMessage = 'Record added succesfully',
+          error => this.errorMessage = < any > error);
+    }
+    // this.student = {};
   }
 
   ngAfterViewChecked() {
@@ -81,7 +102,7 @@ export class StudentFormComponent implements OnInit {
       );
   }
 
-  onValueChanged(data?: any) {
+  onValueChanged(data ? : any) {
     let form = this.studentForm.form;
 
     for (let field in this.formErrors) {
@@ -128,5 +149,4 @@ export class StudentFormComponent implements OnInit {
       'pattern': 'GPA must be a decimal'
     }
   };
-
 }
